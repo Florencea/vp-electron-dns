@@ -6,27 +6,27 @@ catalog:
   vite-plus: 1.0.0
   "@vitest/browser-playwright": 5.0.1
 minimumReleaseAgeExclude:
-  - "@oxc-transform-react/binding-android-arm-eabi@0.153.0"
-  - "@oxc-transform-react/binding-android-arm64@0.153.0"
-  - "@oxc-transform-react/binding-darwin-arm64@0.153.0"
-  - "@oxc-transform-react/binding-darwin-x64@0.153.0"
-  - "@oxc-transform-react/binding-freebsd-x64@0.153.0"
-  - "@oxc-transform-react/binding-linux-arm-gnueabihf@0.153.0"
-  - "@oxc-transform-react/binding-linux-arm-musleabihf@0.153.0"
-  - "@oxc-transform-react/binding-linux-arm64-gnu@0.153.0"
-  - "@oxc-transform-react/binding-linux-arm64-musl@0.153.0"
-  - "@oxc-transform-react/binding-linux-ppc64-gnu@0.153.0"
-  - "@oxc-transform-react/binding-linux-riscv64-gnu@0.153.0"
-  - "@oxc-transform-react/binding-linux-riscv64-musl@0.153.0"
-  - "@oxc-transform-react/binding-linux-s390x-gnu@0.153.0"
-  - "@oxc-transform-react/binding-linux-x64-gnu@0.153.0"
-  - "@oxc-transform-react/binding-linux-x64-musl@0.153.0"
-  - "@oxc-transform-react/binding-openharmony-arm64@0.153.0"
-  - "@oxc-transform-react/binding-win32-arm64-msvc@0.153.0"
-  - "@oxc-transform-react/binding-win32-ia32-msvc@0.153.0"
-  - "@oxc-transform-react/binding-win32-x64-msvc@0.153.0"
+  - "@oxc-transform-react/binding-android-arm-eabi@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-android-arm64@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-darwin-arm64@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-darwin-x64@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-freebsd-x64@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-linux-arm-gnueabihf@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-linux-arm-musleabihf@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-linux-arm64-gnu@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-linux-arm64-musl@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-linux-ppc64-gnu@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-linux-riscv64-gnu@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-linux-riscv64-musl@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-linux-s390x-gnu@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-linux-x64-gnu@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-linux-x64-musl@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-openharmony-arm64@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-win32-arm64-msvc@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-win32-ia32-msvc@0.153.0 || 0.154.0"
+  - "@oxc-transform-react/binding-win32-x64-msvc@0.153.0 || 0.154.0"
   - "@vitejs/plugin-react@6.1.2"
-  - oxc-transform-react@0.153.0
+  - oxc-transform-react@0.153.0 || 0.154.0
   - "@adobe/react-spectrum@3.47.6"
   - "@internationalized/number@3.6.9"
   - "@react-types/shared@3.37.0"
@@ -36,6 +36,7 @@ minimumReleaseAgeExclude:
   - react-aria-components@1.22.0
   - react-aria@3.53.0
   - react-stately@3.51.0
+  - zod@4.6.7
 overrides:
   vite@*: "catalog:"
   vitest@*: "catalog:"
