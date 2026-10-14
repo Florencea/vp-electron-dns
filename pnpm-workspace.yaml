@@ -39,6 +39,8 @@ minimumReleaseAgeExclude:
   - react-aria@3.53.0
   - react-stately@3.51.0
   - zod@4.6.7
+  - react-dom@19.3.1
+  - react@19.3.1
 overrides:
   vite@*: "catalog:"
   vitest@*: "catalog:"
