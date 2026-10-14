@@ -83,7 +83,7 @@ jobs:
         run: vp run build:all
 
       - name: Pack unpacked application
-        run: vp run app:pack
+        run: vp run --no-cache app:pack
         env:
           DEBUG: "electron-forge:*,electron-packager"
 
@@ -91,7 +91,7 @@ jobs:
         run: xvfb-run --auto-servernum vp run agent:test:e2e
 
       - name: Try package on Linux
-        run: vp run app:linux
+        run: vp run --no-cache app:linux
         env:
           DEBUG: "electron-forge:*,electron-packager"
 
@@ -165,13 +165,13 @@ jobs:
 
       - name: Try package on macOS
         if: runner.os == 'macOS'
-        run: vp run app:mac
+        run: vp run --no-cache app:mac
         env:
           DEBUG: "electron-forge:*,electron-packager"
 
       - name: Try package on Windows
         if: runner.os == 'Windows'
-        run: vp run app:win
+        run: vp run --no-cache app:win
         env:
           DEBUG: "electron-forge:*,electron-packager"
 
