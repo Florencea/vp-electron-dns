@@ -27,7 +27,7 @@
   },
   "include": [
     "*.config.ts",
-    "electron-builder-config.ts",
+    "forge.config.ts",
     "scripts/**/*",
     "src/main/**/*",
     "src/preload/**/*",

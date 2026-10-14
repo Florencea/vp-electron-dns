@@ -23,15 +23,15 @@ Designed for deterministic DNS evaluation across preset and custom resolvers, fe
 
 ## Tech Stack
 
-| Layer                | Technology                                           |
-| :------------------- | :--------------------------------------------------- |
-| **Runtime & Shell**  | Electron (Context Isolation, Safe IPC Bridge)        |
-| **Frontend UI**      | React 19, Adobe React Spectrum, Tailwind CSS v4      |
-| **State & Fetching** | TanStack Query                                       |
-| **Build & Dev**      | Vite+ (1.0), Rolldown, Native Electron Dev Plugin    |
-| **Testing**          | Vitest (Chromium Browser Mode + Node Backend Tests)  |
-| **Packaging**        | electron-builder (Cross-compilation, DMG, NSIS, Deb) |
-| **Code Quality**     | TypeScript (strict), Oxlint, Oxfmt, Knip             |
+| Layer                | Technology                                          |
+| :------------------- | :-------------------------------------------------- |
+| **Runtime & Shell**  | Electron (Context Isolation, Safe IPC Bridge)       |
+| **Frontend UI**      | React 19, Adobe React Spectrum, Tailwind CSS v4     |
+| **State & Fetching** | TanStack Query                                      |
+| **Build & Dev**      | Vite+ (1.0), Rolldown, Native Electron Dev Plugin   |
+| **Testing**          | Vitest (Chromium Browser Mode + Node Backend Tests) |
+| **Packaging**        | Electron Forge v8 (ASAR, Fuses, DMG, ZIP)           |
+| **Code Quality**     | TypeScript (strict), Oxlint, Oxfmt, Knip            |
 
 ---
 
@@ -78,9 +78,9 @@ Designed for deterministic DNS evaluation across preset and custom resolvers, fe
 | `vpr build:all`      | Build all targets (main, preload, renderer) with Vite+              |
 | `vpr check:deadcode` | Detect dead code and unused exports with Knip                       |
 | `vpr app:pack`       | Validate Electron packaging by generating unpacked directory        |
-| `vpr app:mac`        | Package macOS application into `release/`                           |
-| `vpr app:win`        | Package Windows application into `release/`                         |
-| `vpr app:linux`      | Package Linux application into `release/`                           |
+| `vpr app:mac`        | Package macOS application into `out/`                               |
+| `vpr app:win`        | Package Windows application into `out/`                             |
+| `vpr app:linux`      | Package Linux application into `out/`                               |
 | `vpr test:setup`     | Install Playwright Chromium binary                                  |
 
 ### Agent Verification Commands

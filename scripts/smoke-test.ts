@@ -1,7 +1,9 @@
+import { spawn } from "node:child_process";
 import fs from "node:fs";
+import net from "node:net";
 import path from "node:path";
 import process from "node:process";
-import { _electron as electron } from "playwright";
+import { chromium } from "playwright";
 import { z } from "zod";
 import { APP_CONFIG } from "../src/shared/config.ts";
 
@@ -10,50 +12,110 @@ const PackageJsonSchema = z.object({
   productName: z.string().optional(),
 });
 
+async function getAvailablePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.unref();
+    server.on("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      if (address !== null && typeof address === "object") {
+        const port = address.port;
+        server.close(() => {
+          resolve(port);
+        });
+      } else {
+        server.close(() => {
+          reject(new Error("Unable to determine free port"));
+        });
+      }
+    });
+  });
+}
+
+async function waitForCdpReady(
+  endpoint: string,
+  maxAttempts = 30,
+  intervalMs = 200,
+): Promise<boolean> {
+  const check = async (attempt: number): Promise<boolean> => {
+    if (attempt >= maxAttempts) {
+      return false;
+    }
+    try {
+      const res = await fetch(`${endpoint}/json/version`);
+      if (res.ok) {
+        return true;
+      }
+    } catch {
+      // Waiting for Electron browser process to start CDP listener
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    return check(attempt + 1);
+  };
+
+  return check(0);
+}
+
 function findExecutable(): string {
-  const releaseDir = path.resolve(import.meta.dirname, "../release");
-  if (!fs.existsSync(releaseDir)) {
-    throw new Error(`Release directory not found at ${releaseDir}. Did you run "vpr app:pack"?`);
+  const outDir = path.resolve(import.meta.dirname, "../out");
+  if (!fs.existsSync(outDir)) {
+    throw new Error(`Output directory not found at ${outDir}. Did you run "vpr app:pack"?`);
   }
 
-  if (process.platform === "darwin") {
-    const entries = fs.readdirSync(releaseDir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.isDirectory() && entry.name.startsWith("mac")) {
-        const macDir = path.join(releaseDir, entry.name);
-        const appEntries = fs.readdirSync(macDir, { withFileTypes: true });
-        for (const app of appEntries) {
-          if (app.isDirectory() && app.name.endsWith(".app")) {
-            const macOSDir = path.join(macDir, app.name, "Contents", "MacOS");
-            if (fs.existsSync(macOSDir)) {
-              const binEntries = fs.readdirSync(macOSDir);
-              const firstBin = binEntries[0];
-              if (firstBin !== undefined) {
-                return path.join(macOSDir, firstBin);
-              }
+  const entries = fs.readdirSync(outDir, { withFileTypes: true });
+  const platformDirs = entries.filter((entry) => {
+    if (!entry.isDirectory() || entry.name === "make") {
+      return false;
+    }
+    if (process.platform === "darwin") {
+      return entry.name.includes("darwin");
+    }
+    if (process.platform === "win32") {
+      return entry.name.includes("win32");
+    }
+    return entry.name.includes("linux");
+  });
+
+  if (platformDirs.length === 0) {
+    throw new Error(
+      `No packaged output folder found for platform "${process.platform}" in ${outDir}. Available folders: ${entries.map((e) => e.name).join(", ")}`,
+    );
+  }
+
+  for (const dir of platformDirs) {
+    const fullDirPath = path.join(outDir, dir.name);
+
+    if (process.platform === "darwin") {
+      const subEntries = fs.readdirSync(fullDirPath, { withFileTypes: true });
+      for (const app of subEntries) {
+        if (app.isDirectory() && app.name.endsWith(".app")) {
+          const macOSDir = path.join(fullDirPath, app.name, "Contents", "MacOS");
+          if (fs.existsSync(macOSDir)) {
+            const binEntries = fs.readdirSync(macOSDir);
+            const firstBin = binEntries[0];
+            if (firstBin !== undefined) {
+              return path.join(macOSDir, firstBin);
             }
           }
         }
       }
-    }
-  } else if (process.platform === "win32") {
-    const winDir = path.join(releaseDir, "win-unpacked");
-    if (fs.existsSync(winDir)) {
-      const entries = fs.readdirSync(winDir);
-      const exe = entries.find(
-        (file) => file.endsWith(".exe") && !file.toLowerCase().includes("uninstall"),
+    } else if (process.platform === "win32") {
+      const subEntries = fs.readdirSync(fullDirPath);
+      const exe = subEntries.find(
+        (file) =>
+          file.endsWith(".exe") &&
+          !file.toLowerCase().includes("uninstall") &&
+          !file.toLowerCase().includes("squirrel"),
       );
-      if (exe) {
-        return path.join(winDir, exe);
+      if (exe !== undefined) {
+        return path.join(fullDirPath, exe);
       }
-    }
-  } else {
-    // Linux
-    const linuxDir = path.join(releaseDir, "linux-unpacked");
-    if (fs.existsSync(linuxDir)) {
+    } else {
+      // Linux
       const isExecutable = (filename: string): boolean => {
         try {
-          const fullPath = path.join(linuxDir, filename);
+          const fullPath = path.join(fullDirPath, filename);
           const stat = fs.statSync(fullPath);
           return stat.isFile() && (stat.mode & 0o111) !== 0;
         } catch {
@@ -61,7 +123,7 @@ function findExecutable(): string {
         }
       };
 
-      const entries = fs.readdirSync(linuxDir);
+      const subEntries = fs.readdirSync(fullDirPath);
 
       // Check package name or productName first
       const candidateNames: string[] = [];
@@ -85,8 +147,8 @@ function findExecutable(): string {
       candidateNames.push(APP_CONFIG.title);
 
       for (const name of candidateNames) {
-        if (entries.includes(name) && isExecutable(name)) {
-          return path.join(linuxDir, name);
+        if (subEntries.includes(name) && isExecutable(name)) {
+          return path.join(fullDirPath, name);
         }
       }
 
@@ -97,7 +159,7 @@ function findExecutable(): string {
         "crashpad_handler",
       ]);
 
-      const exe = entries.find((file) => {
+      const exe = subEntries.find((file) => {
         if (
           file.includes(".") ||
           file.startsWith("chrome-") ||
@@ -109,20 +171,23 @@ function findExecutable(): string {
         }
         return isExecutable(file);
       });
-      if (exe) {
-        return path.join(linuxDir, exe);
+      if (exe !== undefined) {
+        return path.join(fullDirPath, exe);
       }
     }
   }
 
   throw new Error(
-    `Unable to locate packaged executable for platform "${process.platform}" in ${releaseDir}`,
+    `Unable to locate packaged executable for platform "${process.platform}" in ${outDir}`,
   );
 }
 
 async function runSmokeTest(): Promise<void> {
   const executablePath = findExecutable();
   console.log(`[smoke-test] Found packaged executable: ${executablePath}`);
+
+  const port = await getAvailablePort();
+  console.log(`[smoke-test] Using remote debugging port: ${port.toString()}`);
 
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(process.env)) {
@@ -131,17 +196,35 @@ async function runSmokeTest(): Promise<void> {
     }
   }
 
-  const pageErrors: Error[] = [];
+  const childArgs = [
+    `--remote-debugging-port=${port.toString()}`,
+    "--no-sandbox",
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+  ];
 
-  const app = await electron.launch({
-    executablePath,
+  const appProcess = spawn(executablePath, childArgs, {
     env,
-    args: ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
+    stdio: ["ignore", "pipe", "pipe"],
   });
 
+  const pageErrors: Error[] = [];
+
+  const endpoint = `http://127.0.0.1:${port.toString()}`;
+  const ready = await waitForCdpReady(endpoint);
+  if (!ready) {
+    appProcess.kill();
+    throw new Error(`Electron application did not open CDP on ${endpoint} within timeout.`);
+  }
+
+  console.log("[smoke-test] Connecting over CDP...");
+  const browser = await chromium.connectOverCDP(endpoint);
+
   try {
-    console.log("[smoke-test] Waiting for first window...");
-    const window = await app.firstWindow();
+    const defaultContext = browser.contexts()[0] ?? (await browser.newContext());
+    const existingPages = defaultContext.pages();
+    const window =
+      existingPages[0] ?? (await defaultContext.waitForEvent("page", { timeout: 10_000 }));
 
     window.on("pageerror", (error: Error) => {
       console.error("[smoke-test] Page error:", error);
@@ -153,7 +236,7 @@ async function runSmokeTest(): Promise<void> {
 
     const title = await window.title();
     console.log(`[smoke-test] Window title: "${title}"`);
-    if (!title || title.trim().length === 0) {
+    if (title.trim().length === 0) {
       throw new Error("Window title is empty! Document title was not properly set.");
     }
 
@@ -176,7 +259,8 @@ async function runSmokeTest(): Promise<void> {
     );
   } finally {
     console.log("[smoke-test] Closing application...");
-    await app.close();
+    await browser.close().catch(() => {});
+    appProcess.kill("SIGTERM");
   }
 
   console.log("[smoke-test] Smoke test passed successfully!");

@@ -16,16 +16,23 @@
     "agent:verify:gate": "vpr agent:verify:unit && vpr build:all && vpr app:pack && vpr agent:test:e2e",
     "agent:verify:inner": "vp check && node scripts/lint-tailwind.ts",
     "agent:verify:unit": "vpr agent:verify:inner && vpr agent:test:unit",
-    "app:linux": "vpr build:all && electron-builder -c electron-builder-config.ts --linux --publish never",
-    "app:mac": "vpr build:all && electron-builder -c electron-builder-config.ts --mac --publish never",
-    "app:pack": "electron-builder -c electron-builder-config.ts --dir --publish never",
-    "app:win": "vpr build:all && electron-builder -c electron-builder-config.ts --win --x64 --arm64 --publish never",
+    "app:linux": "vpr build:all && vpx electron-forge make --platform=linux",
+    "app:mac": "vpr build:all && vpx electron-forge make --platform=darwin",
+    "app:pack": "vpr build:all && vpx electron-forge package",
+    "app:win": "vpr build:all && vpx electron-forge make --platform=win32 --arch=x64",
+    "build": "vpr build:all",
     "build:all": "vp build --mode main && vp build --mode preload && vp build",
     "check:deadcode": "knip",
     "test:setup": "playwright install chromium"
   },
   "devDependencies": {
     "@adobe/react-spectrum": "3.47.7",
+    "@electron-forge/cli": "^8.0.1",
+    "@electron-forge/maker-dmg": "^8.0.1",
+    "@electron-forge/maker-zip": "^8.0.1",
+    "@electron-forge/plugin-fuses": "^8.0.1",
+    "@electron-forge/shared-types": "^8.0.1",
+    "@electron/fuses": "^2.0.0",
     "@tailwindcss/language-server": "0.16.0",
     "@tailwindcss/vite": "4.3.3",
     "@tanstack/react-query": "5.104.2",
@@ -35,7 +42,6 @@
     "@vitejs/plugin-react": "6.1.2",
     "@vitest/browser-playwright": "catalog:",
     "electron": "44.7.2",
-    "electron-builder": "26.17.0",
     "knip": "6.41.0",
     "oxc-transform-react": "0.154.0",
     "playwright": "1.64.1",
@@ -55,13 +61,15 @@
     "entry": [
       "src/main/index.ts",
       "src/preload/index.ts",
-      "electron-builder-config.ts"
+      "forge.config.ts"
     ],
     "ignoreBinaries": [
-      "actionlint"
+      "actionlint",
+      "vpx"
     ],
     "ignoreDependencies": [
-      "@tailwindcss/language-server"
+      "@tailwindcss/language-server",
+      "@electron-forge/cli"
     ],
     "playwright": true
   }

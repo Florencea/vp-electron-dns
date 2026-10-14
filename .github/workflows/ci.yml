@@ -25,6 +25,7 @@ jobs:
   gatekeeper:
     name: Gatekeeper (Linux)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -83,12 +84,16 @@ jobs:
 
       - name: Pack unpacked application
         run: vp run app:pack
+        env:
+          DEBUG: "electron-forge:*,electron-packager"
 
       - name: Run E2E smoke test
         run: xvfb-run --auto-servernum vp run agent:test:e2e
 
       - name: Try package on Linux
         run: vp run app:linux
+        env:
+          DEBUG: "electron-forge:*,electron-packager"
 
       - name: Upload test artifacts on failure
         if: failure()
@@ -96,7 +101,7 @@ jobs:
         with:
           name: gatekeeper-failure-artifacts
           path: |
-            release/
+            out/
             test-results/
             playwright-report/
             *.log
@@ -107,6 +112,7 @@ jobs:
     name: Platform Compatibility (${{ matrix.os }})
     needs: gatekeeper
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -160,10 +166,14 @@ jobs:
       - name: Try package on macOS
         if: runner.os == 'macOS'
         run: vp run app:mac
+        env:
+          DEBUG: "electron-forge:*,electron-packager"
 
       - name: Try package on Windows
         if: runner.os == 'Windows'
         run: vp run app:win
+        env:
+          DEBUG: "electron-forge:*,electron-packager"
 
       - name: Upload test artifacts on failure
         if: failure()
@@ -171,7 +181,7 @@ jobs:
         with:
           name: platform-compat-failure-artifacts-${{ matrix.os }}
           path: |
-            release/
+            out/
             test-results/
             playwright-report/
             *.log

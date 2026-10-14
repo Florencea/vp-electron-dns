@@ -1,5 +1,7 @@
 allowBuilds:
   electron-winstaller: true
+  fs-xattr: true
+  macos-alias: true
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@1.0.0
   vitest: 5.0.1
@@ -48,3 +50,5 @@ peerDependencyRules:
     vite: "*"
     vitest: "*"
 saveExact: true
+hoistPattern:
+  - "*"

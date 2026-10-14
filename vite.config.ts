@@ -49,6 +49,7 @@ export default defineConfig(({ mode }) => {
       ignorePatterns: [
         "dist/**",
         "release/**",
+        "out/**",
         ".cache/**",
         ".vitest/**",
         "test-results/**",
@@ -73,6 +74,7 @@ export default defineConfig(({ mode }) => {
       ignorePatterns: [
         "dist/**",
         "release/**",
+        "out/**",
         ".cache/**",
         ".vitest/**",
         "test-results/**",
