@@ -13,11 +13,21 @@ export const App = () => {
   const [locale, handleLocaleChange] = useLocale();
 
   const ipv4 = useMutation({
-    mutationFn: async (name: string) => window.api.queryIpv4(mode, name),
+    mutationFn: async (name: string) => {
+      if (typeof window !== "undefined" && typeof window.api?.queryIpv4 === "function") {
+        return window.api.queryIpv4(mode, name);
+      }
+      return [];
+    },
   });
 
   const ipv6 = useMutation({
-    mutationFn: async (name: string) => window.api.queryIpv6(mode, name),
+    mutationFn: async (name: string) => {
+      if (typeof window !== "undefined" && typeof window.api?.queryIpv6 === "function") {
+        return window.api.queryIpv6(mode, name);
+      }
+      return [];
+    },
   });
 
   const isLoading = ipv4.isPending || ipv6.isPending;

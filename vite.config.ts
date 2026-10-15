@@ -24,7 +24,11 @@ export default defineConfig(({ mode }) => {
             format: "cjs",
             entryFileNames: "index.cjs",
           },
+          external: ["electron"],
         },
+      },
+      ssr: {
+        noExternal: true,
       },
     };
   }

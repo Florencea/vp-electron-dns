@@ -257,6 +257,34 @@ async function runSmokeTest(): Promise<void> {
     console.log(
       `[smoke-test] UI successfully rendered (${innerHtml.length.toString()} bytes of HTML).`,
     );
+
+    console.log("[smoke-test] Verifying real window.api object in Electron...");
+    const hasQueryApi = await window.evaluate(() => {
+      const g = globalThis as Record<string, unknown>;
+      const api = g.api;
+      if (typeof api === "object" && api !== null) {
+        return "queryIpv4" in api && "queryIpv6" in api;
+      }
+      return false;
+    });
+    console.log("[smoke-test] window.api query methods available:", hasQueryApi);
+    if (!hasQueryApi) {
+      throw new Error("window.api is missing expected methods: queryIpv4, queryIpv6");
+    }
+
+    console.log("[smoke-test] Testing domain query interaction with real preload IPC...");
+    const hostInput = window.locator('input[name="host"]');
+    await hostInput.waitFor({ state: "visible", timeout: 5000 });
+    await hostInput.fill("example.com");
+
+    const submitBtn = window.locator('button[type="submit"]');
+    await submitBtn.waitFor({ state: "visible", timeout: 5000 });
+    await submitBtn.click();
+
+    console.log("[smoke-test] Waiting for real DNS query results to populate in UI...");
+    const codeWithResult = window.locator("code").filter({ hasText: "ipv4:" }).first();
+    await codeWithResult.waitFor({ state: "visible", timeout: 15_000 });
+    console.log("[smoke-test] Real DNS query results successfully rendered!");
   } finally {
     console.log("[smoke-test] Closing application...");
     await browser.close().catch(() => {});
