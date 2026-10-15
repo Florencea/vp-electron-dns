@@ -1,6 +1,7 @@
 import type { Mock } from "vite-plus/test";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import type { ModeT, ServerT } from "../../src/shared/types";
+import type { ModeT, ServerT, SupportedLocale } from "../../src/shared/types";
+import { initLocaleSubscription, resetLocaleStore } from "../../src/renderer/hooks/useLocale";
 import { renderApp } from "./test-utils";
 
 type QueryFn = (mode: ModeT, name: string) => Promise<string[]>;
@@ -25,6 +26,10 @@ const mockServers: ServerT[] = [
 describe("<App /> in Browser Mode", () => {
   let queryIpv4Mock: Mock<QueryFn>;
   let queryIpv6Mock: Mock<QueryFn>;
+  let getLocaleMock: Mock<() => Promise<SupportedLocale>>;
+  let setLocaleMock: Mock<(locale: SupportedLocale) => Promise<void>>;
+  let localeChangeListeners: Array<(locale: SupportedLocale) => void>;
+  let onLocaleChangeMock: Mock<(callback: (locale: SupportedLocale) => void) => () => void>;
 
   beforeEach(() => {
     queryIpv4Mock = vi.fn<QueryFn>().mockResolvedValue(["ipv4: 12.34ms\n93.184.216.34"]);
@@ -32,11 +37,35 @@ describe("<App /> in Browser Mode", () => {
       .fn<QueryFn>()
       .mockResolvedValue(["ipv6: 15.67ms\n2606:2800:220:1:248:1893:25c8:1946"]);
 
+    localeChangeListeners = [];
+    getLocaleMock = vi.fn<() => Promise<SupportedLocale>>().mockResolvedValue("en-US");
+    setLocaleMock = vi
+      .fn<(locale: SupportedLocale) => Promise<void>>()
+      .mockImplementation(async (loc) => {
+        for (const listener of localeChangeListeners) {
+          listener(loc);
+        }
+      });
+    onLocaleChangeMock = vi
+      .fn<(callback: (locale: SupportedLocale) => void) => () => void>()
+      .mockImplementation((cb: (locale: SupportedLocale) => void) => {
+        localeChangeListeners.push(cb);
+        return () => {
+          localeChangeListeners = localeChangeListeners.filter((l) => l !== cb);
+        };
+      });
+
     window.api = {
       servers: mockServers,
       queryIpv4: queryIpv4Mock,
       queryIpv6: queryIpv6Mock,
+      getLocale: getLocaleMock,
+      setLocale: setLocaleMock,
+      onLocaleChange: onLocaleChangeMock,
     };
+
+    resetLocaleStore("en-US");
+    initLocaleSubscription();
   });
 
   it("renders server cards in default DNS mode", async () => {
@@ -84,10 +113,10 @@ describe("<App /> in Browser Mode", () => {
   it("triggers queries upon domain form submission", async () => {
     const screen = await renderApp();
 
-    const submitBtn = screen.getByRole("button", { name: /submit/i });
+    const submitBtn = screen.getByRole("button", { name: /submit|查詢/i });
     await expect.element(submitBtn).toBeVisible();
 
-    const domainInput = screen.getByRole("textbox", { name: /domain/i });
+    const domainInput = screen.getByRole("textbox", { name: /domain|網域名稱/i });
     await domainInput.fill("example.com");
 
     await submitBtn.click();
@@ -99,12 +128,27 @@ describe("<App /> in Browser Mode", () => {
   it("clears results when clicking Reset", async () => {
     const screen = await renderApp();
 
-    const resetBtn = screen.getByRole("button", { name: /reset/i });
+    const resetBtn = screen.getByRole("button", { name: /reset|清除/i });
     await expect.element(resetBtn).toBeVisible();
 
     await resetBtn.click();
 
     expect(queryIpv4Mock).toHaveBeenCalledWith("dns", "");
     expect(queryIpv6Mock).toHaveBeenCalledWith("dns", "");
+  });
+
+  it("updates UI language dynamically when locale changes", async () => {
+    const screen = await renderApp();
+
+    const submitBtn = screen.getByRole("button", { name: /submit/i });
+    await expect.element(submitBtn).toBeInTheDocument();
+
+    for (const listener of localeChangeListeners) {
+      listener("zh-TW");
+    }
+
+    const zhSubmitBtn = screen.getByRole("button", { name: /查詢/i });
+    await expect.element(zhSubmitBtn).toBeInTheDocument();
+    await expect.element(zhSubmitBtn).toBeVisible();
   });
 });

@@ -1,10 +1,15 @@
 import { expectTypeOf, test } from "vite-plus/test";
 import type { DnsQueryT } from "../../src/main/dns";
 import type { AppConfig } from "../../src/shared/config";
+import type { SupportedLocale } from "../../src/shared/locales";
 import type { ModeT, ServerT, WindowApi } from "../../src/shared/types";
 
 test("E2E Type Contract: ModeT is strictly union of 'dns' and 'doh'", () => {
   expectTypeOf<ModeT>().toEqualTypeOf<"dns" | "doh">();
+});
+
+test("E2E Type Contract: SupportedLocale is strictly union of 'zh-TW' and 'en-US'", () => {
+  expectTypeOf<SupportedLocale>().toEqualTypeOf<"zh-TW" | "en-US">();
 });
 
 test("E2E Type Contract: ServerT adheres to required structural schema", () => {
@@ -41,6 +46,13 @@ test("E2E Type Contract: WindowApi contract matches preload exposition", () => {
   >();
   expectTypeOf<WindowApi["queryIpv6"]>().toEqualTypeOf<
     (mode: ModeT, name: string) => Promise<string[]>
+  >();
+  expectTypeOf<WindowApi["getLocale"]>().toEqualTypeOf<() => Promise<SupportedLocale>>();
+  expectTypeOf<WindowApi["setLocale"]>().toEqualTypeOf<
+    (locale: SupportedLocale) => Promise<void>
+  >();
+  expectTypeOf<WindowApi["onLocaleChange"]>().toEqualTypeOf<
+    (callback: (locale: SupportedLocale) => void) => () => void
   >();
 });
 

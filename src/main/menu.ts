@@ -1,130 +1,165 @@
 import electron, { type MenuItemConstructorOptions } from "electron";
 import { APP_CONFIG } from "../shared/config";
+import type { SupportedLocale } from "../shared/locales";
+import { getTranslations } from "../shared/locales";
+
 const { Menu, app } = electron;
 
-const isDev = !app.isPackaged;
+export function createApplicationMenu(
+  locale: SupportedLocale,
+  onSelectLocale?: (locale: SupportedLocale) => void,
+): electron.Menu {
+  const isDev = !app.isPackaged;
+  const isMac = process.platform === "darwin";
+  const appName = APP_CONFIG.title;
+  const t = getTranslations(locale);
 
-const isMac = process.platform === "darwin";
+  const aboutLabel = t.menu.app.about.replace("{appName}", appName);
+  const hideLabel = t.menu.app.hide.replace("{appName}", appName);
+  const quitLabel = t.menu.app.quit.replace("{appName}", appName);
 
-const appName = APP_CONFIG.title;
-
-const menuMac: MenuItemConstructorOptions[] = [
-  {
-    role: "appMenu",
-    label: appName,
+  const languageSubmenu: MenuItemConstructorOptions = {
+    label: t.menu.language.label,
     submenu: [
-      { role: "about", label: `關於${appName}` },
-      { type: "separator" },
-      { role: "hide", label: `隱藏${appName}` },
-      { role: "hideOthers", label: "隱藏其他" },
-      { role: "unhide", label: "全部顯示" },
-      { type: "separator" },
-      { role: "quit", label: `結束${appName}` },
-    ],
-  },
-  {
-    role: "fileMenu",
-    label: "檔案",
-    submenu: [{ role: "close", label: "關閉視窗" }],
-  },
-  {
-    role: "editMenu",
-    label: "編輯",
-    submenu: [
-      { role: "undo", label: "復原" },
-      { role: "redo", label: "取消復原" },
-      { type: "separator" },
-      { role: "cut", label: "剪下" },
-      { role: "copy", label: "複製" },
-      { role: "paste", label: "貼上" },
-      { type: "separator" },
-    ],
-  },
-  {
-    label: "檢視",
-    role: "viewMenu",
-    submenu: [
-      { role: "reload", label: "重新載入", visible: isDev, enabled: isDev },
       {
-        role: "forceReload",
-        label: "強制重新載入",
-        visible: isDev,
-        enabled: isDev,
+        label: t.menu.language.zhTW,
+        type: "radio",
+        checked: locale === "zh-TW",
+        click: () => {
+          onSelectLocale?.("zh-TW");
+        },
       },
       {
-        role: "toggleDevTools",
-        label: "開發人員工具",
-        visible: isDev,
-        enabled: isDev,
+        label: t.menu.language.enUS,
+        type: "radio",
+        checked: locale === "en-US",
+        click: () => {
+          onSelectLocale?.("en-US");
+        },
       },
-      { role: "resetZoom", label: "實際大小" },
-      { role: "zoomIn", label: "放大" },
-      { role: "zoomOut", label: "縮小" },
     ],
-  },
-  {
-    label: "視窗",
-    role: "windowMenu",
-    submenu: [
-      { role: "minimize", label: "最小化" },
-      { role: "zoom", label: "縮放" },
-      { type: "separator" },
-      { role: "front", label: "全部移至最上層" },
-    ],
-  },
-];
+  };
 
-const menuWindows: MenuItemConstructorOptions[] = [
-  {
-    role: "fileMenu",
-    label: "檔案",
-    submenu: [{ role: "quit", label: `結束${appName}` }],
-  },
-  {
-    role: "editMenu",
-    label: "編輯",
-    submenu: [
-      { role: "undo", label: "復原" },
-      { role: "redo", label: "取消復原" },
-      { type: "separator" },
-      { role: "cut", label: "剪下" },
-      { role: "copy", label: "複製" },
-      { role: "paste", label: "貼上" },
-      { type: "separator" },
-    ],
-  },
-  {
-    label: "檢視",
-    role: "viewMenu",
-    submenu: [
-      { role: "reload", label: "重新載入", visible: isDev, enabled: isDev },
-      {
-        role: "forceReload",
-        label: "強制重新載入",
-        visible: isDev,
-        enabled: isDev,
-      },
-      {
-        role: "toggleDevTools",
-        label: "開發人員工具",
-        visible: isDev,
-        enabled: isDev,
-      },
-      { role: "resetZoom", label: "重設縮放" },
-      { role: "zoomIn", label: "放大" },
-      { role: "zoomOut", label: "縮小" },
-    ],
-  },
-  {
-    label: "視窗",
-    role: "windowMenu",
-    submenu: [
-      { role: "minimize", label: "最小化" },
-      { role: "zoom", label: "最大化" },
-      { type: "separator" },
-      { role: "close", label: "關閉視窗" },
-    ],
-  },
-];
+  const menuMac: MenuItemConstructorOptions[] = [
+    {
+      role: "appMenu",
+      label: appName,
+      submenu: [
+        { role: "about", label: aboutLabel },
+        { type: "separator" },
+        { role: "hide", label: hideLabel },
+        { role: "hideOthers", label: t.menu.app.hideOthers },
+        { role: "unhide", label: t.menu.app.unhide },
+        { type: "separator" },
+        { role: "quit", label: quitLabel },
+      ],
+    },
+    {
+      role: "fileMenu",
+      label: t.menu.file.label,
+      submenu: [{ role: "close", label: t.menu.file.close }],
+    },
+    {
+      role: "editMenu",
+      label: t.menu.edit.label,
+      submenu: [
+        { role: "undo", label: t.menu.edit.undo },
+        { role: "redo", label: t.menu.edit.redo },
+        { type: "separator" },
+        { role: "cut", label: t.menu.edit.cut },
+        { role: "copy", label: t.menu.edit.copy },
+        { role: "paste", label: t.menu.edit.paste },
+        { role: "selectAll", label: t.menu.edit.selectAll },
+      ],
+    },
+    {
+      label: t.menu.view.label,
+      role: "viewMenu",
+      submenu: [
+        { role: "reload", label: t.menu.view.reload, visible: isDev, enabled: isDev },
+        {
+          role: "forceReload",
+          label: t.menu.view.forceReload,
+          visible: isDev,
+          enabled: isDev,
+        },
+        {
+          role: "toggleDevTools",
+          label: t.menu.view.toggleDevTools,
+          visible: isDev,
+          enabled: isDev,
+        },
+        { role: "resetZoom", label: t.menu.view.resetZoom },
+        { role: "zoomIn", label: t.menu.view.zoomIn },
+        { role: "zoomOut", label: t.menu.view.zoomOut },
+      ],
+    },
+    languageSubmenu,
+    {
+      label: t.menu.window.label,
+      role: "windowMenu",
+      submenu: [
+        { role: "minimize", label: t.menu.window.minimize },
+        { role: "zoom", label: t.menu.window.zoom },
+        { type: "separator" },
+        { role: "front", label: t.menu.window.front },
+      ],
+    },
+  ];
 
-export const menu = Menu.buildFromTemplate(isMac ? menuMac : menuWindows);
+  const menuWindows: MenuItemConstructorOptions[] = [
+    {
+      role: "fileMenu",
+      label: t.menu.file.label,
+      submenu: [{ role: "quit", label: quitLabel }],
+    },
+    {
+      role: "editMenu",
+      label: t.menu.edit.label,
+      submenu: [
+        { role: "undo", label: t.menu.edit.undo },
+        { role: "redo", label: t.menu.edit.redo },
+        { type: "separator" },
+        { role: "cut", label: t.menu.edit.cut },
+        { role: "copy", label: t.menu.edit.copy },
+        { role: "paste", label: t.menu.edit.paste },
+        { role: "selectAll", label: t.menu.edit.selectAll },
+      ],
+    },
+    {
+      label: t.menu.view.label,
+      role: "viewMenu",
+      submenu: [
+        { role: "reload", label: t.menu.view.reload, visible: isDev, enabled: isDev },
+        {
+          role: "forceReload",
+          label: t.menu.view.forceReload,
+          visible: isDev,
+          enabled: isDev,
+        },
+        {
+          role: "toggleDevTools",
+          label: t.menu.view.toggleDevTools,
+          visible: isDev,
+          enabled: isDev,
+        },
+        { role: "resetZoom", label: t.menu.view.resetZoom },
+        { role: "zoomIn", label: t.menu.view.zoomIn },
+        { role: "zoomOut", label: t.menu.view.zoomOut },
+      ],
+    },
+    languageSubmenu,
+    {
+      label: t.menu.window.label,
+      role: "windowMenu",
+      submenu: [
+        { role: "minimize", label: t.menu.window.minimize },
+        { role: "zoom", label: t.menu.window.zoom },
+        { type: "separator" },
+        { role: "close", label: t.menu.window.close },
+      ],
+    },
+  ];
+
+  return Menu.buildFromTemplate(isMac ? menuMac : menuWindows);
+}

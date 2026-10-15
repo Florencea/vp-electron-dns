@@ -3,40 +3,62 @@ import { isIPv4, isIPv6 } from "node:net";
 import { URL } from "node:url";
 import { z } from "zod";
 import { SERVERS } from "../shared/servers";
+import type { DnsQueryT, ServerT } from "../shared/types";
+import { DnsQuerySchema, ServerSchema } from "../shared/types";
 
-export interface DnsQueryT {
-  server: string;
-  ip: string;
-  name: string;
-  type: "A" | "AAAA";
-}
+export type { DnsQueryT };
 
 const AnsSchema = z.object({
-  Answer: z.array(z.object({ type: z.number(), data: z.string() })).optional(),
+  Status: z.number().optional(),
+  Answer: z
+    .array(z.object({ type: z.number(), data: z.string(), TTL: z.number().optional() }))
+    .optional(),
   Comment: z.string().optional(),
   nameServer: z.string().optional(),
 });
 
-export const fetchDns = async ({ server, name, type }: DnsQueryT): Promise<string> => {
+const resolverPool = new Map<string, Resolver>();
+
+export function getResolver(ip: string): Resolver {
+  const cached = resolverPool.get(ip);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const resolver = new Resolver({ timeout: 2500, tries: 1 });
+  if (ip !== "-") {
+    try {
+      resolver.setServers([ip]);
+    } catch {
+      // Gracefully ignore invalid IP formats and keep system resolver
+    }
+  }
+  resolverPool.set(ip, resolver);
+  return resolver;
+}
+
+export const fetchDns = async (query: DnsQueryT): Promise<string> => {
   try {
-    if (server === "-") {
+    const valid = DnsQuerySchema.safeParse(query);
+    if (!valid.success || valid.data.server === "-") {
       return "";
     }
+    const { server, name, type } = valid.data;
     const url = new URL(server);
     url.searchParams.set("name", name);
     url.searchParams.set("type", type);
+
     const t0 = performance.now();
-    const res = await fetch(
-      new Request(url.toString(), {
-        method: "GET",
-        headers: {
-          Accept: "application/dns-json",
-        },
-      }),
-    );
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/dns-json",
+      },
+      signal: AbortSignal.timeout(3000),
+    });
     const t1 = performance.now();
+
     if (!res.ok) {
-      throw new Error(`Request failed on status ${res.status.toString()}`);
+      return "";
     }
     const json: unknown = await res.json();
     const parsed = AnsSchema.safeParse(json);
@@ -49,15 +71,7 @@ export const fetchDns = async ({ server, name, type }: DnsQueryT): Promise<strin
     }
     const data = [
       `${type === "A" ? "ipv4: " : "\nipv6: "}${(t1 - t0).toFixed(2)}ms`,
-      ...answer
-        .map((d) => d.data)
-        .filter((ip) => {
-          if (type === "A") {
-            return isIPv4(ip);
-          } else {
-            return isIPv6(ip);
-          }
-        }),
+      ...answer.map((d) => d.data).filter((ip) => (type === "A" ? isIPv4(ip) : isIPv6(ip))),
     ].join("\n");
     return data;
   } catch {
@@ -65,12 +79,15 @@ export const fetchDns = async ({ server, name, type }: DnsQueryT): Promise<strin
   }
 };
 
-export const resolveDns = async ({ ip, name, type }: DnsQueryT): Promise<string> => {
+export const resolveDns = async (query: DnsQueryT): Promise<string> => {
   try {
-    const resolver = new Resolver();
-    if (ip !== "-") {
-      resolver.setServers([ip]);
+    const valid = DnsQuerySchema.safeParse(query);
+    if (!valid.success) {
+      return "";
     }
+    const { ip, name, type } = valid.data;
+    const resolver = getResolver(ip);
+
     if (type === "A") {
       const t0 = performance.now();
       const address = await resolver.resolve4(name);
@@ -87,22 +104,40 @@ export const resolveDns = async ({ ip, name, type }: DnsQueryT): Promise<string>
   }
 };
 
+const HostQuerySchema = z.object({
+  type: z.enum(["A", "AAAA"]),
+  name: z.string().trim().min(1),
+  servers: z.array(ServerSchema).default(SERVERS),
+});
+
 export const fetchHost = (
   _event: unknown,
-  type: DnsQueryT["type"],
-  name: string,
-  servers: { title: string; server: string; ip: string }[] = SERVERS,
-): Promise<string[]> =>
-  name.length > 0
-    ? Promise.all(servers.map(({ server, ip }) => fetchDns({ server, name, type, ip })))
-    : Promise.resolve([]);
+  rawType: unknown,
+  rawName: unknown,
+  rawServers: unknown = SERVERS,
+): Promise<string[]> => {
+  const parsed = HostQuerySchema.safeParse({ type: rawType, name: rawName, servers: rawServers });
+  if (!parsed.success) {
+    return Promise.resolve([]);
+  }
+  const { type, name, servers } = parsed.data;
+  return Promise.all(
+    servers.map(({ server, ip }: ServerT) => fetchDns({ server, name, type, ip })),
+  );
+};
 
 export const resolveHost = (
   _event: unknown,
-  type: DnsQueryT["type"],
-  name: string,
-  servers: { title: string; server: string; ip: string }[] = SERVERS,
-): Promise<string[]> =>
-  name.length > 0
-    ? Promise.all(servers.map(({ server, ip }) => resolveDns({ server, name, type, ip })))
-    : Promise.resolve([]);
+  rawType: unknown,
+  rawName: unknown,
+  rawServers: unknown = SERVERS,
+): Promise<string[]> => {
+  const parsed = HostQuerySchema.safeParse({ type: rawType, name: rawName, servers: rawServers });
+  if (!parsed.success) {
+    return Promise.resolve([]);
+  }
+  const { type, name, servers } = parsed.data;
+  return Promise.all(
+    servers.map(({ server, ip }: ServerT) => resolveDns({ server, name, type, ip })),
+  );
+};

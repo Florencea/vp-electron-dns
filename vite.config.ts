@@ -33,6 +33,7 @@ export default defineConfig(({ mode }) => {
     run: {
       cache: {
         scripts: true,
+        tasks: true,
       },
     },
     base: "./",
