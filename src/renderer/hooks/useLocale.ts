@@ -52,7 +52,7 @@ function getServerSnapshot(): SupportedLocale {
   return "zh-TW";
 }
 
-export async function changeLocale(newLocale: SupportedLocale): Promise<void> {
+async function changeLocale(newLocale: SupportedLocale): Promise<void> {
   if (currentLocale !== newLocale) {
     currentLocale = newLocale;
     notify();

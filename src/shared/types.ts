@@ -1,8 +1,7 @@
 import { z } from "zod";
 import type { SupportedLocale } from "./locales";
-import { SupportedLocaleSchema } from "./locales";
 
-export const ModeSchema = z.enum(["dns", "doh"]);
+const ModeSchema = z.enum(["dns", "doh"]);
 export type ModeT = z.infer<typeof ModeSchema>;
 
 export const ServerSchema = z.object({
@@ -32,7 +31,6 @@ export const DomainInputSchema = z
     "domain_invalid",
   );
 
-export { SupportedLocaleSchema };
 export type { SupportedLocale };
 
 export interface WindowApi {

@@ -19,7 +19,7 @@ const AnsSchema = z.object({
 
 const resolverPool = new Map<string, Resolver>();
 
-export function getResolver(ip: string): Resolver {
+function getResolver(ip: string): Resolver {
   const cached = resolverPool.get(ip);
   if (cached !== undefined) {
     return cached;

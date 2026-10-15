@@ -4,7 +4,7 @@ import { zhTW } from "./zh-TW";
 
 export * from "./types";
 
-export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
+const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
   "zh-TW": zhTW,
   "en-US": enUS,
 };

@@ -7,7 +7,7 @@ import { resolveLocale, SupportedLocaleSchema } from "../shared/locales";
 
 const { app } = electron;
 
-export const AppSettingsSchema = z.object({
+const AppSettingsSchema = z.object({
   locale: SupportedLocaleSchema.optional(),
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
