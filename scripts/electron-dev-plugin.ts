@@ -1,8 +1,11 @@
 import electronPath from "electron";
 import type { ChildProcess } from "node:child_process";
 import { spawn } from "node:child_process";
-import type { Plugin, ViteDevServer } from "vite";
-import { build } from "vite";
+import type { createServer, ViteUserConfig } from "vite-plus";
+import { build } from "vite-plus";
+
+type ViteDevServer = Awaited<ReturnType<typeof createServer>>;
+type Plugin = NonNullable<ViteUserConfig["plugins"]>[number];
 
 type BuildWatcher = Extract<Awaited<ReturnType<typeof build>>, { on: unknown }>;
 type WatcherEvent = { code: string };
