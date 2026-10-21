@@ -27,7 +27,7 @@ minimumReleaseAgeExclude:
   - "@adobe/react-spectrum@3.47.6"
   - "@internationalized/number@3.6.9"
   - "@react-types/shared@3.37.0"
-  - electron@44.7.0 || 44.7.2 || 44.8.0 || 44.9.1 || 44.9.3
+  - electron@44.7.0 || 44.7.2 || 44.8.0 || 44.9.1 || 44.9.3 || 45.0.0
   - playwright-core@1.64.0 || 1.64.1
   - playwright@1.64.0 || 1.64.1
   - react-aria-components@1.22.0
