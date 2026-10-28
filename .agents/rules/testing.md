@@ -14,19 +14,15 @@ Tests are split into two Vitest workspace projects configured directly in `vite.
 
 - **Renderer Project (`test/renderer/**`)**:
   - Runs in headless Chromium via native `vite-plus/test/browser` and Playwright.
-  - Mounts components with `<QueryClientProvider>` and mock `window.api`.
-  - Verifies interactive component state, user selections, and DOM accessibility.
+  - Mounts components via `renderApp()` wrapped in `<QueryClientProvider>` with mock `window.api`.
+  - Dual UI assertion requirement:
+    - DOM presence: `await expect.element(el).toBeInTheDocument()`
+    - Visibility: `await expect.element(el).toBeVisible()`
 - **Main Project (`test/main/**`)**:
   - Runs in native Node.js runtime.
-  - Tests DNS resolution algorithms, network error resilience, and preset configurations.
+  - Tests DNS/DoH resolution algorithms, system menus, and settings persistence.
 
-## 2. Invariants & Assertions
+## 2. Invariants & Canary Type Contracts
 
-- **Browser Focus Protection**: Chromium browser instances run with `headless: true` to prevent stealing window focus.
-- **Dual UI Assertions**:
-  - Verify DOM presence: `await expect.element(el).toBeInTheDocument()`
-  - Verify visibility: `await expect.element(el).toBeVisible()`
-- **Type Canary Tests**:
-  - `test/canary/e2e-type-contract.test.ts` asserts static contract fidelity using `expectTypeOf`.
-- **Noise Control**: Test output uses `silent: "passed-only"` to suppress noisy logs on success while immediately detailing failures.
-- **No `.only` in Automated Runs**: Vitest enforces `allowOnly: !process.env.CI`. Never commit `.only` blocks.
+- **Type Contract Tests**: `test/canary/e2e-type-contract.test.ts` asserts static contract fidelity using `expectTypeOf`. Any change to shared types, servers, or locales must update and pass these assertions.
+- **Automated Verification**: Use `vpr agent:test:unit` to execute test suites under TAP reporting.

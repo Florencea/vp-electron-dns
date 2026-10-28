@@ -1,7 +1,7 @@
 ---
 trigger: glob
 globs: "src/main/**, src/preload/**, src/shared/**"
-description: Electron main process, preload security bridge, and shared IPC contracts standards.
+description: Electron main process, preload security bridge, settings, and shared IPC contracts standards.
 ---
 
 # Electron Main & Preload Guidelines
@@ -11,22 +11,22 @@ Standards for backend networking, window lifecycle, and secure cross-process com
 ## 1. Process Separation & Security Boundary
 
 - **Main Process (`src/main/`)**:
-  - Responsible for Electron application lifecycle, window management, system menus, and backend networking.
-  - DNS resolution and DoH logic reside in `src/main/dns.ts`.
-  - Never import browser-only APIs here.
+  - Responsible for Electron application lifecycle, window management, system menus (`menu.ts`), and user settings persistence (`settings.ts`).
+  - DNS resolution and DoH engine logic reside strictly in `dns.ts`.
+  - Never import browser-only APIs into the main process.
 - **Preload Bridge (`src/preload/`)**:
-  - Exposes typed APIs to the renderer via `contextBridge.exposeInMainWorld("api", ...)`.
+  - Exposes typed APIs exclusively via `contextBridge.exposeInMainWorld("api", ...)`.
   - Type definitions reside in `src/preload/index.d.ts`.
-  - **Security**: Never expose raw Node.js modules or raw `ipcRenderer` directly to the renderer. Context isolation is mandatory.
+  - **Security Invariant**: Never expose raw Node.js modules or raw `ipcRenderer` directly to the renderer. Context isolation is mandatory.
 - **Shared (`src/shared/`)**:
-  - Cross-process interfaces in `src/shared/types.ts` (`ModeT`, `ServerT`).
-  - Single Source of Truth for DNS server presets in `src/shared/servers.ts`.
+  - Cross-process contracts in `types.ts` (`ModeT`, `ServerT`, `WindowApi`).
+  - SSOT for DNS presets in `servers.ts` and UI localization in `locales/`.
 
-## 2. Feature Development Flow
+## 2. IPC Feature Development Flow
 
 When adding or modifying an IPC capability:
 
-1. **Define Contract**: Add request and response types to `src/shared/types.ts`.
-2. **Implement Main Logic**: Write business logic in `src/main/` and register with `ipcMain.handle()`.
-3. **Bridge Preload**: Expose typed method in `src/preload/index.ts` and add interface to `src/preload/index.d.ts`.
-4. **Canary Contract Test**: Update `test/canary/e2e-type-contract.test.ts` to assert interface types.
+1. **Contract**: Add request/response schemas to `src/shared/types.ts`.
+2. **Main Handler**: Implement business logic in `src/main/` and register with `ipcMain.handle()`.
+3. **Preload Exposure**: Expose typed method in `src/preload/index.ts` and reflect in `src/preload/index.d.ts`.
+4. **Contract Verification**: Update `test/canary/e2e-type-contract.test.ts` to assert interface fidelity.

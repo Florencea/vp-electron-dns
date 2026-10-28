@@ -8,21 +8,16 @@ description: UI development standards for React 19, Adobe React Spectrum, and Ta
 
 Guidelines for renderer UI components, state management, and styling.
 
-## 1. Component Architecture & State Management
+## 1. Component Architecture & Spectrum Integration
 
 - **UI Framework**: React 19 single-page application mounted at `src/renderer/main.tsx`.
-- **Component System**: Adobe React Spectrum components paired with Tailwind CSS v4 styling.
-- **Data Flow**: Asynchronous IPC queries and mutations are managed through `@tanstack/react-query`.
-- **IPC Access**: All communication with the main process must pass exclusively through typed `window.api`.
+- **Adobe React Spectrum & Tailwind v4**:
+  - Theme context is provided via root `<Provider theme={defaultTheme} locale={locale}>`.
+  - Style Spectrum components using `UNSAFE_className` paired with Tailwind CSS v4 theme tokens from `src/renderer/index.css`.
+  - All text content must be derived through `getTranslations(locale)` from `src/shared/locales`.
 
-## 2. Automatic Memoization (React Compiler)
+## 2. Asynchronous IPC Data Flow
 
-- Fine-grained memoization is handled automatically via `@vitejs/plugin-react` (`compiler: true`) and `oxc-transform-react`.
-- **Rule**: Do not write manual `useMemo`, `useCallback`, or `React.memo` unless handling documented, non-compiler edge cases.
-- Follow strict React hooks dependencies guidelines.
-
-## 3. Tailwind CSS v4 Canonical Classes
-
-- Design tokens are defined in `src/renderer/index.css` under `@theme`.
-- Enforce canonical class ordering and syntax via the headless Tailwind language server runner.
-- Verification: `vpr agent:lint:tailwind` to diagnose non-canonical classes, `vpr agent:lint:tailwind:fix` to auto-fix.
+- IPC queries and mutations must flow through `@tanstack/react-query` (`useMutation` / `useQuery`) calling typed `window.api`.
+- Never attempt direct Electron or Node.js IPC invocations from renderer components.
+- Verification command for Tailwind class conformity: `vpr agent:lint:tailwind` (fix with `vpr agent:lint:tailwind:fix`).

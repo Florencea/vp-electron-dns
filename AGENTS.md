@@ -44,7 +44,7 @@ Guidelines for AI agents and human contributors working on this repository.
 - **Automatic Memoization**:
   - React Compiler via `@vitejs/plugin-react` (`compiler: true`) and `oxc-transform-react`.
   - Do not add manual `useMemo`, `useCallback`, or `React.memo` unless handling documented edge cases.
-- **Domain Rules**: Path-specific rules live under `.agents/rules/` (`electron-main`, `ui-styling`, `testing`, `ci-workflows`).
+- **Domain Rules**: Path-specific rules live under `.agents/rules/` (`electron-main`, `ui-styling`, `testing`).
 
 ---
 
