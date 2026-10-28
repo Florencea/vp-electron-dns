@@ -52,6 +52,7 @@ minimumReleaseAgeExclude:
   - vscode-jsonrpc@10.0.0
   - vscode-languageserver-protocol@3.18.5
   - vscode-languageserver-types@3.18.5
+  - "@types/node@26.6.6"
 overrides:
   vite@*: "catalog:"
   vitest@*: "catalog:"
