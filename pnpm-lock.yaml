@@ -20,6 +20,9 @@ overrides:
   vite@*: npm:@voidzero-dev/vite-plus-core@1.4.0
   vitest@*: 5.0.5
 
+patchedDependencies:
+  cross-zip@4.0.1: 759f606c96c7cbdad4ff04a9c7c99a187e45ed85693f8b1d56a3151804c7bbf4
+
 importers:
 
   .:
@@ -2783,7 +2786,7 @@ snapshots:
       '@electron-forge/core-utils': 8.0.1(supports-color@7.2.0)
       '@electron-forge/maker-base': 8.0.1(supports-color@7.2.0)
       '@electron-forge/shared-types': 8.0.1(supports-color@7.2.0)
-      cross-zip: 4.0.1
+      cross-zip: 4.0.1(patch_hash=759f606c96c7cbdad4ff04a9c7c99a187e45ed85693f8b1d56a3151804c7bbf4)
     transitivePeerDependencies:
       - supports-color
 
@@ -3890,7 +3893,7 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  cross-zip@4.0.1: {}
+  cross-zip@4.0.1(patch_hash=759f606c96c7cbdad4ff04a9c7c99a187e45ed85693f8b1d56a3151804c7bbf4): {}
 
   csstype@3.2.3: {}
 

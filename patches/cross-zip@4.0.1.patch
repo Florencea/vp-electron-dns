@@ -1,0 +1,24 @@
+diff --git a/index.js b/index.js
+index 94b61425f38d7f075ad41b6186905ab6d52dd994..46431838e3d7c9a273ef138632fdf18dc2aa316c 100644
+--- a/index.js
++++ b/index.js
+@@ -46,7 +46,8 @@ function zip (inPath, outPath, cb) {
+   // Windows zip command does not overwrite existing files. So do it manually first.
+   function doZip () {
+     if (process.platform === 'win32') {
+-      fs.rmdir(outPath, { recursive: true, maxRetries: 3 }, doZip2)
++      const rm = typeof fs.rm === 'function' ? fs.rm : fs.rmdir
++      rm(outPath, { recursive: true, force: true, maxRetries: 3 }, doZip2)
+     } else {
+       doZip2()
+     }
+@@ -72,7 +73,8 @@ function zipSync (inPath, outPath) {
+       fs.writeFileSync(path.join(tmpPath, path.basename(inPath)), inFile)
+       inPath = tmpPath
+     }
+-    fs.rmdirSync(outPath, { recursive: true, maxRetries: 3 })
++    const rmSync = typeof fs.rmSync === 'function' ? fs.rmSync : fs.rmdirSync
++    rmSync(outPath, { recursive: true, force: true, maxRetries: 3 })
+   }
+   const opts = {
+     cwd: path.dirname(inPath),

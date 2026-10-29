@@ -71,3 +71,5 @@ catalog:
   vitest: 5.0.5
   vite-plus: 1.4.0
   "@vitest/browser-playwright": 5.0.5
+patchedDependencies:
+  cross-zip@4.0.1: patches/cross-zip@4.0.1.patch
