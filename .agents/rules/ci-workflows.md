@@ -28,4 +28,3 @@ Standards for maintaining and optimizing GitHub Actions workflows across the rep
 - **Vite+ Action Configuration**: Use `voidzero-dev/setup-vp@v1` with `node-version-file: package.json`, `run-install: false`, and `cache: true` for deterministic runtime resolution and sub-second dependency restoration.
 - **Task Runner Caching**: Preserve `node_modules/.vite/task-cache` across runs to allow unchanged tasks (linting, tests, builds) to replay in milliseconds.
 - **Playwright Browser Caching**: Cache `${{ env.PLAYWRIGHT_BROWSERS_PATH }}` using the Playwright version output as key to eliminate redundant Chromium downloads across test runs.
-
