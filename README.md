@@ -103,8 +103,6 @@ Designed for deterministic DNS evaluation across preset and custom resolvers, fe
 - **Tiered Daily CI (`.github/workflows/ci.yml`)**:
   - **Tier 1 (`gatekeeper`)**: Runs on `ubuntu-latest` against the authoritative Node.js runtime (`package.json`). Executes dependencies installation, Playwright browser caching, the full verification gate (`vp check`, `agent:verify:inner`, `check:deadcode`, `agent:test:unit`, `build:all`, `app:pack`), Linux distribution packaging (`app:linux`), and full headless Electron E2E smoke testing (`xvfb-run vp run agent:test:e2e`).
   - **Tier 2 (`platform-compat`)**: Executes only after `gatekeeper` succeeds across `windows-latest` and `macos-latest`. Validates production builds (`build:all`), native compiler bindings (Rolldown, LightningCSS), runtime path compatibility (`agent:test:unit`), and platform distribution packaging (`app:mac`, `app:win`) without duplicating static checks or heavy E2E journeys.
-- **Proactive Node Canary (`.github/workflows/node-canary.yml`)**:
-  - Scheduled weekly cron job targeting upcoming Node.js releases (Node 26 line) with `--engine-strict=false` and `continue-on-error: true` to detect upstream regressions early without breaking repository status badges.
 
 ---
 

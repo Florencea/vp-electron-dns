@@ -44,7 +44,8 @@ Guidelines for AI agents and human contributors working on this repository.
 - **Automatic Memoization**:
   - React Compiler via `@vitejs/plugin-react` (`compiler: true`) and `oxc-transform-react`.
   - Do not add manual `useMemo`, `useCallback`, or `React.memo` unless handling documented edge cases.
-- **Domain Rules**: Path-specific rules live under `.agents/rules/` (`electron-main`, `ui-styling`, `testing`).
+- **Domain Rules**: Path-specific rules live under `.agents/rules/` (`ci-workflows`, `electron-main`, `ui-styling`, `testing`).
+- **CI & Actions Invariants**: All GitHub Actions must target latest floating major versions (e.g. `voidzero-dev/setup-vp@v1`, `actions/checkout@v7`); pinning exact patch/minor versions is prohibited. Workflows must pass `vpr agent:lint:ci`.
 
 ---
 

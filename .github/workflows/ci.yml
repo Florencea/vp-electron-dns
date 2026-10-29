@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.21.2
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: package.json
           run-install: false
@@ -138,7 +138,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.21.2
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: package.json
           run-install: false
