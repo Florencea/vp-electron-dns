@@ -9,6 +9,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
@@ -34,6 +38,7 @@ jobs:
         uses: voidzero-dev/setup-vp@v1.21.2
         with:
           node-version-file: package.json
+          run-install: false
           cache: true
 
       - name: Install dependencies
@@ -95,6 +100,15 @@ jobs:
         env:
           DEBUG: "electron-forge:*,electron-packager"
 
+      - name: Generate Gatekeeper Step Summary
+        if: always()
+        run: |
+          echo "### 🚀 Gatekeeper Summary (Linux)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Node.js**: $(node -v) (LTS)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Vite+**: $(vp --version 2>&1 | head -n 1)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Runner OS**: ${{ runner.os }} (${{ runner.arch }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Status**: ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }}" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload test artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v7
@@ -127,6 +141,7 @@ jobs:
         uses: voidzero-dev/setup-vp@v1.21.2
         with:
           node-version-file: package.json
+          run-install: false
           cache: true
 
       - name: Install dependencies
@@ -140,9 +155,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-vite-task-cache-${{ hashFiles('pnpm-lock.yaml') }}-
             ${{ runner.os }}-vite-task-cache-
-
-      - name: Build production targets
-        run: vp run build:all
 
       - name: Get Playwright version
         id: playwright-version
@@ -163,6 +175,9 @@ jobs:
       - name: Run unit and component tests
         run: vp run agent:test:unit
 
+      - name: Build production targets
+        run: vp run build:all
+
       - name: Try package on macOS
         if: runner.os == 'macOS'
         run: vp run --no-cache app:mac
@@ -174,6 +189,14 @@ jobs:
         run: vp run --no-cache app:win
         env:
           DEBUG: "electron-forge:*,electron-packager"
+
+      - name: Generate Platform Compat Step Summary
+        if: always()
+        run: |
+          echo "### 🌐 Platform Compatibility Summary (${{ matrix.os }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Node.js**: $(node -v) (LTS)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Runner OS**: ${{ runner.os }} (${{ runner.arch }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Status**: ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload test artifacts on failure
         if: failure()
