@@ -103,11 +103,13 @@ jobs:
       - name: Generate Gatekeeper Step Summary
         if: always()
         run: |
-          echo "### 🚀 Gatekeeper Summary (Linux)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Node.js**: $(node -v) (LTS)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Vite+**: $(vp --version 2>&1 | head -n 1)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Runner OS**: ${{ runner.os }} (${{ runner.arch }})" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Status**: ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }}" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### 🚀 Gatekeeper Summary (Linux)"
+            echo "- **Node.js**: $(node -v) (LTS)"
+            echo "- **Vite+**: $(vp --version 2>&1 | head -n 1)"
+            echo "- **Runner OS**: ${{ runner.os }} (${{ runner.arch }})"
+            echo "- **Status**: ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }}"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload test artifacts on failure
         if: failure()
@@ -193,10 +195,12 @@ jobs:
       - name: Generate Platform Compat Step Summary
         if: always()
         run: |
-          echo "### 🌐 Platform Compatibility Summary (${{ matrix.os }})" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Node.js**: $(node -v) (LTS)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Runner OS**: ${{ runner.os }} (${{ runner.arch }})" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Status**: ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }}" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### 🌐 Platform Compatibility Summary (${{ matrix.os }})"
+            echo "- **Node.js**: $(node -v) (LTS)"
+            echo "- **Runner OS**: ${{ runner.os }} (${{ runner.arch }})"
+            echo "- **Status**: ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }}"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload test artifacts on failure
         if: failure()
