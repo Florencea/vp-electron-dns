@@ -27,7 +27,7 @@ minimumReleaseAgeExclude:
   - "@adobe/react-spectrum@3.47.6"
   - "@internationalized/number@3.6.9"
   - "@react-types/shared@3.37.0"
-  - electron@44.7.0 || 44.7.2 || 44.8.0 || 44.9.1 || 44.9.3 || 45.0.0 || 45.1.0
+  - electron@44.7.0 || 44.7.2 || 44.8.0 || 44.9.1 || 44.9.3 || 45.0.0 || 45.1.0 || 45.2.1
   - playwright-core@1.64.0 || 1.64.1
   - playwright@1.64.0 || 1.64.1
   - react-aria-components@1.22.0
@@ -48,7 +48,7 @@ minimumReleaseAgeExclude:
   - "@voidzero-dev/vite-plus-win32-arm64-msvc@1.3.0 || 1.4.0"
   - "@voidzero-dev/vite-plus-win32-x64-msvc@1.3.0 || 1.4.0"
   - vite-plus@1.3.0 || 1.4.0
-  - knip@6.42.1 || 6.44.0
+  - knip@6.42.1 || 6.44.0 || 6.44.1
   - vscode-jsonrpc@10.0.0
   - vscode-languageserver-protocol@3.18.5
   - vscode-languageserver-types@3.18.5
