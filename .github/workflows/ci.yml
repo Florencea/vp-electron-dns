@@ -34,43 +34,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.21.2
+      - name: Setup Vite+ Environment
+        uses: Florencea/vp-actions/actions/setup-vp-env@v1
         with:
-          node-version-file: package.json
-          run-install: false
-          cache: true
+          checkout: "false"
 
-      - name: Install dependencies
-        run: vp install
-
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(vp exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Playwright Browsers
-        uses: actions/cache@v6
-        id: playwright-cache
-        with:
-          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ steps.playwright-version.outputs.version }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-playwright-
-
-      - name: Cache Vite Task Cache
-        uses: actions/cache@v6
-        with:
-          path: node_modules/.vite/task-cache
-          key: ${{ runner.os }}-vite-task-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-vite-task-cache-${{ hashFiles('pnpm-lock.yaml') }}-
-            ${{ runner.os }}-vite-task-cache-
-
-      - name: Setup test environment (install browser)
-        run: vp run test:setup
-
-      - name: Install Playwright system dependencies on Linux
-        run: vp exec playwright install-deps chromium
+      - name: Setup Playwright Browsers
+        uses: Florencea/vp-actions/actions/setup-playwright@v1
 
       - name: Check (Oxlint & Oxfmt)
         run: vp check
@@ -139,40 +109,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.21.2
+      - name: Setup Vite+ Environment
+        uses: Florencea/vp-actions/actions/setup-vp-env@v1
         with:
-          node-version-file: package.json
-          run-install: false
-          cache: true
+          checkout: "false"
 
-      - name: Install dependencies
-        run: vp install
-
-      - name: Cache Vite Task Cache
-        uses: actions/cache@v6
-        with:
-          path: node_modules/.vite/task-cache
-          key: ${{ runner.os }}-vite-task-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-vite-task-cache-${{ hashFiles('pnpm-lock.yaml') }}-
-            ${{ runner.os }}-vite-task-cache-
-
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(vp exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Playwright Browsers
-        uses: actions/cache@v6
-        id: playwright-cache
-        with:
-          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ steps.playwright-version.outputs.version }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-playwright-
-
-      - name: Setup test environment (install browser)
-        run: vp run test:setup
+      - name: Setup Playwright Browsers
+        uses: Florencea/vp-actions/actions/setup-playwright@v1
 
       - name: Run unit and component tests
         run: vp run agent:test:unit
