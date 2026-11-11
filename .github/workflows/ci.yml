@@ -28,7 +28,7 @@ defaults:
 jobs:
   gatekeeper:
     name: Gatekeeper (Linux)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Checkout repository
@@ -103,8 +103,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-latest
-          - windows-latest
+          - macos-26
+          - windows-2025
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
