@@ -73,8 +73,8 @@ importers:
         specifier: 'catalog:'
         version: 5.1.0(@voidzero-dev/vite-plus-core@1.6.0(@types/node@26.6.6)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))(playwright@1.65.0)(vitest@5.1.0)
       electron:
-        specifier: 45.3.0
-        version: 45.3.0(supports-color@7.2.0)
+        specifier: 45.3.1
+        version: 45.3.1(supports-color@7.2.0)
       knip:
         specifier: 6.45.1
         version: 6.45.1
@@ -1655,8 +1655,8 @@ packages:
     engines: {node: '>= 16'}
     hasBin: true
 
-  electron@45.3.0:
-    resolution: {integrity: sha512-JpSzTaZkNaai4B3pUSICIfXiKwl+a7XyvHpWmA3O7SZbWDXNgYSyc7cmhNhlAARMzNAh9nOdZq5DgTZ/T9rlfA==}
+  electron@45.3.1:
+    resolution: {integrity: sha512-1oYau2B4RXF27Df2fzvrFDJoy8AOSVlgS6gklo6wkLZ/QWJemJCJHkY4+uuacvSFUtR8IimiLukLNFoYP0fmjA==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -3779,7 +3779,7 @@ snapshots:
       - supports-color
     optional: true
 
-  electron@45.3.0(supports-color@7.2.0):
+  electron@45.3.1(supports-color@7.2.0):
     dependencies:
       '@electron-internal/extract-zip': 1.0.5
       '@electron/get': 5.1.0(supports-color@7.2.0)
