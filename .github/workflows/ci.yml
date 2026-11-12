@@ -32,15 +32,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Setup Vite+ Environment
-        uses: Florencea/vp-actions/actions/setup-vp-env@v2
+        uses: Florencea/vp-actions/actions/setup-vp-env@v2.0.0
         with:
           checkout: "false"
 
       - name: Setup Playwright Browsers
-        uses: Florencea/vp-actions/actions/setup-playwright@v2
+        uses: Florencea/vp-actions/actions/setup-playwright@v2.0.0
 
       - name: Check (Oxlint & Oxfmt)
         run: vp check
@@ -83,7 +83,7 @@ jobs:
 
       - name: Upload test artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: gatekeeper-failure-artifacts
           path: |
@@ -107,15 +107,15 @@ jobs:
           - windows-2025
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Setup Vite+ Environment
-        uses: Florencea/vp-actions/actions/setup-vp-env@v2
+        uses: Florencea/vp-actions/actions/setup-vp-env@v2.0.0
         with:
           checkout: "false"
 
       - name: Setup Playwright Browsers
-        uses: Florencea/vp-actions/actions/setup-playwright@v2
+        uses: Florencea/vp-actions/actions/setup-playwright@v2.0.0
 
       - name: Run unit and component tests
         run: vp run agent:test:unit
@@ -147,7 +147,7 @@ jobs:
 
       - name: Upload test artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: platform-compat-failure-artifacts-${{ matrix.os }}
           path: |
