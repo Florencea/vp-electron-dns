@@ -57,6 +57,7 @@
   "engines": {
     "node": "26.13.1"
   },
+  "packageManager": "pnpm@12.21.0",
   "knip": {
     "entry": [
       "src/main/index.ts",
@@ -72,6 +73,5 @@
       "@electron-forge/cli"
     ],
     "playwright": true
-  },
-  "packageManager": "pnpm@12.21.0"
+  }
 }
