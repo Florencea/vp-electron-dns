@@ -72,5 +72,6 @@
       "@electron-forge/cli"
     ],
     "playwright": true
-  }
+  },
+  "packageManager": "pnpm@12.21.0"
 }
