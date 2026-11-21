@@ -25,4 +25,4 @@ Tests are split into two Vitest workspace projects configured directly in `vite.
 ## 2. Invariants & Canary Type Contracts
 
 - **Type Contract Tests**: `test/canary/e2e-type-contract.test.ts` asserts static contract fidelity using `expectTypeOf`. Any change to shared types, servers, or locales must update and pass these assertions.
-- **Automated Verification**: Use `vpr agent:test:unit` to execute test suites under TAP reporting.
+- **Automated Verification**: Use `npm run agent:test:unit` to execute test suites under TAP reporting.

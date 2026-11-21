@@ -20,4 +20,4 @@ Guidelines for renderer UI components, state management, and styling.
 
 - IPC queries and mutations must flow through `@tanstack/react-query` (`useMutation` / `useQuery`) calling typed `window.api`.
 - Never attempt direct Electron or Node.js IPC invocations from renderer components.
-- Verification command for Tailwind class conformity: `vpr agent:lint:tailwind` (fix with `vpr agent:lint:tailwind:fix`).
+- Verification command for Tailwind class conformity: `npm run agent:lint:tailwind` (fix with `npm run agent:lint:tailwind:fix`).

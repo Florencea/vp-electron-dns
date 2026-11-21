@@ -11,12 +11,185 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
 
+env:
+  CI: "true"
+  NO_COLOR: "1"
+  PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  ci:
-    name: Gatekeeper & Package
-    uses: Florencea/vp-actions/.github/workflows/vp-electron-ci.yml@v3.1.0
+  gatekeeper:
+    name: Gatekeeper (Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: package.json
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(npx playwright --version | awk '{print $2}' | tr -d '\r')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v6.1.0
+        id: playwright-cache
+        with:
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ steps.playwright-version.outputs.version }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-playwright-
+
+      - name: Setup test environment (install browser)
+        run: npm run test:setup
+
+      - name: Install Playwright system dependencies on Linux
+        run: npx playwright install-deps chromium
+
+      - name: Inner Loop Verification (Check, Tailwind)
+        run: npm run agent:verify:inner
+
+      - name: Dead Code Check (Knip)
+        run: npm run check:deadcode
+
+      - name: Unit Tests
+        run: npm run agent:test:unit
+
+      - name: Build Production Targets
+        run: npm run build:all
+
+      - name: Pack Unpacked Application
+        run: npm run app:pack
+        env:
+          DEBUG: "electron-forge:*,electron-packager"
+
+      - name: Run E2E Smoke Test
+        run: xvfb-run --auto-servernum npm run agent:test:e2e
+
+      - name: Package on Linux
+        run: npm run app:linux
+        env:
+          DEBUG: "electron-forge:*,electron-packager"
+
+      - name: Generate Gatekeeper Step Summary
+        if: always()
+        run: |
+          {
+            echo "### Gatekeeper Summary (Linux)"
+            echo "- **Node.js**: $(node -v)"
+            echo "- **Vite+**: $(npx vp --version 2>&1 | head -n 1)"
+            echo "- **Runner OS**: ${{ runner.os }} (${{ runner.arch }})"
+            echo "- **Status**: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Test Results Artifacts on Failure
+        if: failure()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: gatekeeper-failure-artifacts
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            out/
+            test-results/
+            playwright-report/
+            blob-report/
+            *.log
+
+  platform-package:
+    name: Platform Package (${{ matrix.os }})
+    needs: [gatekeeper]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-26
+          - windows-2025
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: package.json
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(npx playwright --version | awk '{print $2}' | tr -d '\r')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v6.1.0
+        id: playwright-cache
+        with:
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ steps.playwright-version.outputs.version }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-playwright-
+
+      - name: Setup test environment (install browser)
+        run: npm run test:setup
+
+      - name: Unit Tests
+        run: npm run agent:test:unit
+
+      - name: Build Production Targets
+        run: npm run build:all
+
+      - name: Package on macOS
+        if: runner.os == 'macOS'
+        run: npm run app:mac
+        env:
+          DEBUG: "electron-forge:*,electron-packager"
+
+      - name: Package on Windows
+        if: runner.os == 'Windows'
+        run: npm run app:win
+        env:
+          DEBUG: "electron-forge:*,electron-packager"
+
+      - name: Generate Platform Package Step Summary
+        if: always()
+        run: |
+          {
+            echo "### Platform Package Summary (${{ matrix.os }})"
+            echo "- **Node.js**: $(node -v)"
+            echo "- **Runner OS**: ${{ runner.os }} (${{ runner.arch }})"
+            echo "- **Status**: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Test Results Artifacts on Failure
+        if: failure()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: platform-package-failure-artifacts-${{ matrix.os }}
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            out/
+            test-results/
+            playwright-report/
+            blob-report/
+            *.log

@@ -60,7 +60,7 @@ async function waitForCdpReady(
 function findExecutable(): string {
   const outDir = path.resolve(import.meta.dirname, "../out");
   if (!fs.existsSync(outDir)) {
-    throw new Error(`Output directory not found at ${outDir}. Did you run "vpr app:pack"?`);
+    throw new Error(`Output directory not found at ${outDir}. Did you run "npm run app:pack"?`);
   }
 
   const entries = fs.readdirSync(outDir, { withFileTypes: true });
